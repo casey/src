@@ -1,10 +1,11 @@
 [package]
-name     = "src"
-version  = "0.0.0"
-authors  = ["Casey Rodarmor <casey@rodarmor.com>"]
-homepage = "https://github.com/casey/just"
-license  = "CC0-1.0"
-edition  = "2018"
+name        = "src"
+version     = "0.0.0"
+description = "䷯ Manage your personal zoo of repositories"
+authors     = ["Casey Rodarmor <casey@rodarmor.com>"]
+homepage    = "https://github.com/casey/just"
+license     = "CC0-1.0"
+edition     = "2018"
 
 [dependencies]
 ansi_term   = "0.12.1"
