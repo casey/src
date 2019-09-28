@@ -19,6 +19,11 @@ pub(crate) enum Opt {
     #[structopt(long = "force")]
     force: bool,
   },
+  Push {
+    remote: String,
+    #[structopt(long = "force")]
+    force: bool,
+  },
 }
 
 impl Opt {
@@ -30,33 +35,14 @@ impl Opt {
       Remote { spec } => Self::remote(config, spec),
       Get { tmp, spec } => Self::get(config, tmp, spec),
       Init { force } => Self::init(force),
+      Push { force, remote } => Self::push(config, remote, force),
     }
   }
 
   fn status(config: Config) -> Result<(), Error> {
-    let repos = Repo::load_dir(config.srcdir())?;
+    let src = Src::load(config.srcdir())?;
 
-    for (i, repo) in repos.into_iter().filter(Repo::is_dirty).enumerate() {
-      if i > 0 {
-        println!();
-      }
-
-      print!("{}", repo.name());
-
-      if repo.head() != "master" {
-        print!("@{}", repo.head());
-      }
-
-      if repo.state() != "clean" {
-        print!(" {}", repo.state());
-      }
-
-      println!(":");
-
-      for (path, status) in repo.files() {
-        println!("{} {}", status, path);
-      }
-    }
+    src.print_status();
 
     Ok(())
   }
@@ -64,7 +50,7 @@ impl Opt {
   fn remote(config: Config, spec: Vec<String>) -> Result<(), Error> {
     let spec = config.spec(spec)?;
 
-    println!("{}", spec.remote()?);
+    eprintln!("{}", spec.remote()?);
 
     Ok(())
   }
@@ -77,6 +63,10 @@ impl Opt {
     } else {
       config.srcdir().join(&spec.project)
     };
+
+    if dst.exists() {
+      return Err(Error::DestinationExists { destination: dst });
+    }
 
     Repo::clone(&spec.provider.name, &spec.remote()?, &dst)?;
 
@@ -95,7 +85,20 @@ impl Opt {
 
     fs::write(&path, Config::default()).context(error::Io { path: &path })?;
 
-    println!("Successfully wrote default config to {}.", path.display());
+    eprintln!("Successfully wrote default config to {}.", path.display());
+
+    Ok(())
+  }
+
+  fn push(config: Config, remote: String, force: bool) -> Result<(), Error> {
+    let src = Src::load(config.srcdir())?;
+
+    if !force && src.is_dirty() {
+      src.print_status();
+      return Err(Error::PushDirty);
+    }
+
+    src.push_all(&remote)?;
 
     Ok(())
   }

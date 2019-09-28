@@ -53,6 +53,21 @@ pub(crate) enum Error {
     command: Vec<OsString>,
     status: ExitStatus
   },
+  #[snafu(display(
+    "Command `{}` failed: {}\n{}\n{}",
+    command.into_iter().map(|os_string| {
+      os_string.to_string_lossy().into_owned() 
+    }).collect::<Vec<String>>().join(" "),
+    status,
+    stdout,
+    stderr,
+  ))]
+  CommandOutput {
+    command: Vec<OsString>,
+    status: ExitStatus,
+    stdout: String,
+    stderr: String,
+  },
   #[snafu(display("Failed to place config file: {}", source))]
   ConfigPlace {
     source: io::Error,
@@ -62,6 +77,12 @@ pub(crate) enum Error {
     path.display()
   ))]
   ConfigExists { path: PathBuf },
+  #[snafu(display("Refusing to push modified repositories.\n(Use the `--force` flag to push anyways.)"))]
+  PushDirty,
+  #[snafu(display("Failed to push all repositories to `{}`", remote))]
+  PushAll { remote: String },
+  #[snafu(display("Destination already exists: {}", destination.display()))]
+  DestinationExists { destination: PathBuf },
 }
 
 impl Error {

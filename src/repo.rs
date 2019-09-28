@@ -1,8 +1,7 @@
 use crate::common::*;
 
 pub(crate) struct Repo {
-  #[allow(unused)]
-  repo: git2::Repository,
+  path: PathBuf,
   name: String,
   state: git2::RepositoryState,
   files: BTreeMap<String, Status>,
@@ -57,13 +56,67 @@ impl Repo {
 
     let head = head(&repo).context(context)?;
 
+    let path = repo.path().to_owned();
+
     Ok(Repo {
-      repo,
       name,
       state,
       files,
       head,
+      path,
     })
+  }
+
+  pub(crate) fn _command_status(command: Vec<OsString>) -> Result<(), Error> {
+    let status = Command::new(&command[0])
+      .args(&command[1..])
+      .status()
+      .context(error::CommandInvocation {
+        command: command.clone(),
+      })?;
+
+    if !status.success() {
+      return Err(Error::CommandStatus { command, status });
+    }
+
+    Ok(())
+  }
+
+  pub(crate) fn command_output(command: Vec<OsString>) -> Result<(), Error> {
+    let output = Command::new(&command[0])
+      .args(&command[1..])
+      .output()
+      .context(error::CommandInvocation {
+        command: command.clone(),
+      })?;
+
+    if !output.status.success() {
+      let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+      let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
+      return Err(Error::CommandOutput {
+        command,
+        status: output.status,
+        stderr,
+        stdout,
+      });
+    }
+
+    Ok(())
+  }
+
+  pub(crate) fn push(&self, remote: &str) -> Result<(), Error> {
+    let command: Vec<OsString> = vec![
+      "git".into(),
+      "--git-dir".into(),
+      self.path.clone().into(),
+      "push".into(),
+      "--all".into(),
+      remote.into(),
+    ];
+
+    Self::command_output(command)?;
+
+    Ok(())
   }
 
   pub(crate) fn clone(provider: &str, url: &str, into: &Path) -> Result<Repo, Error> {
@@ -76,36 +129,9 @@ impl Repo {
       into.into(),
     ];
 
-    let status = Command::new(&command[0])
-      .args(&command[1..])
-      .status()
-      .context(error::CommandInvocation {
-        command: command.clone(),
-      })?;
-
-    if !status.success() {
-      return Err(Error::CommandStatus { command, status });
-    }
+    Self::command_output(command)?;
 
     Self::new(into)
-  }
-
-  pub(crate) fn load_dir(path: &Path) -> Result<Vec<Repo>, Error> {
-    let mut repos = Vec::new();
-
-    for result in fs::read_dir(path).context(error::Io { path })? {
-      let entry = result.context(error::Io { path })?;
-
-      if entry.file_name() == ".DS_Store" {
-        continue;
-      }
-
-      let path = entry.path();
-
-      repos.push(Repo::new(&path)?);
-    }
-
-    Ok(repos)
   }
 
   pub(crate) fn name(&self) -> &str {

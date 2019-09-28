@@ -11,7 +11,9 @@ pub(crate) use std::{
 };
 
 // dependencies
+pub(crate) use indicatif::{ProgressBar, ProgressStyle};
 pub(crate) use libc::EXIT_FAILURE;
+pub(crate) use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 pub(crate) use serde::Deserialize;
 pub(crate) use snafu::{ResultExt, Snafu};
 pub(crate) use structopt::StructOpt;
@@ -22,6 +24,6 @@ pub(crate) use crate::{error, raw};
 
 // structs and enums
 pub(crate) use crate::{
-  config::Config, error::Error, opt::Opt, provider::Provider, repo::Repo, spec::Spec,
-  status::Status,
+  color::Color, config::Config, error::Error, opt::Opt, provider::Provider, repo::Repo, spec::Spec,
+  src::Src, status::Status,
 };
