@@ -8,11 +8,11 @@ pub(crate) enum Opt {
   Get {
     #[structopt(long = "tmp")]
     tmp: bool,
-    #[structopt(min_values = 1, max_values = 3)]
+    #[structopt(required = true, min_values = 1, max_values = 3)]
     spec: Vec<String>,
   },
   Remote {
-    #[structopt(min_values = 1, max_values = 3)]
+    #[structopt(required = true, min_values = 1, max_values = 3)]
     spec: Vec<String>,
   },
   Init {
