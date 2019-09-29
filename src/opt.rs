@@ -50,7 +50,7 @@ impl Opt {
   fn remote(config: Config, spec: Vec<String>) -> Result<(), Error> {
     let spec = config.spec(spec)?;
 
-    eprintln!("{}", spec.remote()?);
+    println!("{}", spec.remote()?);
 
     Ok(())
   }
