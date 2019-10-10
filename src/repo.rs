@@ -51,7 +51,23 @@ impl Repo {
         }
       }
 
-      Ok(repo.head()?.peel_to_commit()?.id().to_string())
+      match repo.head() {
+        Ok(head) => Ok(head.peel_to_commit()?.id().to_string()),
+        Err(error) => {
+          if error.code() == git2::ErrorCode::UnbornBranch {
+            Ok(
+              repo
+                .find_reference("HEAD")
+                .unwrap()
+                .symbolic_target()
+                .unwrap()
+                .to_owned(),
+            )
+          } else {
+            Err(error)
+          }
+        }
+      }
     }
 
     let head = head(&repo).context(context)?;
@@ -171,5 +187,23 @@ impl Repo {
       ApplyMailbox => "apply mailbox",
       ApplyMailboxOrRebase => "apply mailbox or rebase",
     }
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn empty() -> Result<(), Error> {
+    let tempdir = tempfile::tempdir().context(error::Io { path: "<TEMPDIR>" })?;
+
+    let path = tempdir.path().join("repo");
+
+    Repo::command_output(vec!["git".into(), "init".into(), path.clone().into()])?;
+
+    Repo::new(&path)?;
+
+    Ok(())
   }
 }
