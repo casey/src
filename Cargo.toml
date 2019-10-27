@@ -1,6 +1,6 @@
 [package]
 name        = "src"
-version     = "0.0.3"
+version     = "0.0.4"
 description = "䷯ Manage your personal zoo of repositories"
 authors     = ["Casey Rodarmor <casey@rodarmor.com>"]
 homepage    = "https://github.com/casey/just"
