@@ -83,7 +83,7 @@ impl Repo {
     })
   }
 
-  pub(crate) fn _command_status(command: Vec<OsString>) -> Result<(), Error> {
+  pub(crate) fn command_status(command: Vec<OsString>) -> Result<(), Error> {
     let status = Command::new(&command[0])
       .args(&command[1..])
       .status()
@@ -145,7 +145,7 @@ impl Repo {
       into.into(),
     ];
 
-    Self::command_output(command)?;
+    Self::command_status(command)?;
 
     Self::new(into)
   }
