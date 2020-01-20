@@ -34,7 +34,7 @@ pub(crate) enum Error {
   #[snafu(display(
     "Command `{}` invocation failed: {}",
     command.into_iter().map(|os_string| {
-      os_string.to_string_lossy().into_owned() 
+      os_string.to_string_lossy().into_owned()
     }).collect::<Vec<String>>().join(" "),
     source
   ))]
@@ -45,18 +45,18 @@ pub(crate) enum Error {
   #[snafu(display(
     "Command `{}` failed: {}",
     command.into_iter().map(|os_string| {
-      os_string.to_string_lossy().into_owned() 
+      os_string.to_string_lossy().into_owned()
     }).collect::<Vec<String>>().join(" "),
     status
   ))]
   CommandStatus {
     command: Vec<OsString>,
-    status: ExitStatus
+    status: ExitStatus,
   },
   #[snafu(display(
     "Command `{}` failed: {}\n{}\n{}",
     command.into_iter().map(|os_string| {
-      os_string.to_string_lossy().into_owned() 
+      os_string.to_string_lossy().into_owned()
     }).collect::<Vec<String>>().join(" "),
     status,
     stdout,
@@ -69,15 +69,15 @@ pub(crate) enum Error {
     stderr: String,
   },
   #[snafu(display("Failed to place config file: {}", source))]
-  ConfigPlace {
-    source: io::Error,
-  },
+  ConfigPlace { source: io::Error },
   #[snafu(display(
     "Config already exists at path `{}`.\n(Use the `--force` flag to overwite it.)",
     path.display()
   ))]
   ConfigExists { path: PathBuf },
-  #[snafu(display("Refusing to push modified repositories.\n(Use the `--force` flag to push anyways.)"))]
+  #[snafu(display(
+    "Refusing to push modified repositories.\n(Use the `--force` flag to push anyways.)"
+  ))]
   PushDirty,
   #[snafu(display("Failed to push all repositories to `{}`", remote))]
   PushAll { remote: String },
