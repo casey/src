@@ -4,3 +4,6 @@ export RUST_BACKTRACE := bt
 
 watch:
 	cargo watch --clear --exec test
+
+test:
+	cargo test
