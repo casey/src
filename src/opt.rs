@@ -4,6 +4,12 @@ use Opt::*;
 
 #[derive(StructOpt)]
 pub(crate) enum Opt {
+  Add {
+    #[structopt(required = true, min_values = 1, max_values = 3)]
+    spec: Vec<String>,
+    #[structopt(long = "name")]
+    name: Option<String>,
+  },
   Status,
   Get {
     #[structopt(long = "tmp")]
@@ -31,12 +37,27 @@ impl Opt {
     let config = Config::load()?;
 
     match self {
+      Add { spec, name } => Self::add(config, spec, name),
       Status => Self::status(config),
       Remote { spec } => Self::remote(config, spec),
       Get { tmp, spec } => Self::get(config, tmp, spec),
       Init { force } => Self::init(force),
       Push { force, remote } => Self::push(config, remote, force),
     }
+  }
+
+  fn add(config: Config, spec: Vec<String>, name: Option<String>) -> Result<(), Error> {
+    let spec = config.spec(spec)?;
+
+    let remote = spec.remote()?;
+
+    let name = name.as_deref().unwrap_or(&spec.provider.name);
+
+    let command = &["git", "remote", "add", name, &remote];
+
+    Repo::command_status(command.iter().map(|arg| arg.into()).collect())?;
+
+    Ok(())
   }
 
   fn status(config: Config) -> Result<(), Error> {
