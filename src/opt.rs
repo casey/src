@@ -30,6 +30,9 @@ pub(crate) enum Opt {
     #[structopt(long = "force")]
     force: bool,
   },
+  All {
+    command: Vec<String>,
+  },
 }
 
 impl Opt {
@@ -38,6 +41,7 @@ impl Opt {
 
     match self {
       Add { spec, name } => Self::add(config, spec, name),
+      All { command } => Self::all(config, &command),
       Status => Self::status(config),
       Remote { spec } => Self::remote(config, spec),
       Get { tmp, spec } => Self::get(config, tmp, spec),
@@ -56,6 +60,14 @@ impl Opt {
     let command = &["git", "remote", "add", name, &remote];
 
     Repo::command_status(command.iter().map(|arg| arg.into()).collect())?;
+
+    Ok(())
+  }
+
+  fn all(config: Config, command: &[String]) -> Result<(), Error> {
+    let src = Src::load(config.srcdir())?;
+
+    src.all(command)?;
 
     Ok(())
   }

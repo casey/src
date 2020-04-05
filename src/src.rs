@@ -96,4 +96,12 @@ impl Src {
       })
     }
   }
+
+  pub(crate) fn all(&self, command: &[String]) -> Result<(), Error> {
+    for repo in &self.repos {
+      repo.run(command.iter().map(OsString::from).collect())?;
+    }
+
+    Ok(())
+  }
 }

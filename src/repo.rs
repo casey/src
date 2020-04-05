@@ -83,6 +83,22 @@ impl Repo {
     })
   }
 
+  pub(crate) fn run(&self, command: Vec<OsString>) -> Result<(), Error> {
+    let status = Command::new(&command[0])
+      .args(&command[1..])
+      .current_dir(&self.path.parent().unwrap())
+      .status()
+      .context(error::CommandInvocation {
+        command: command.clone(),
+      })?;
+
+    if !status.success() {
+      return Err(Error::CommandStatus { command, status });
+    }
+
+    Ok(())
+  }
+
   pub(crate) fn command_status(command: Vec<OsString>) -> Result<(), Error> {
     let status = Command::new(&command[0])
       .args(&command[1..])
